@@ -19,7 +19,7 @@ class Extractor:
     refer to [keyword-price-api/server.py] for its uses
 
     Attributes:
-        guccibag (df): ./gucci_bags.csv
+        genprods (df): ./gucci_bags.csv
         
         codeprice (dict): {CODE: averaged price}
         stopwords (dict): {CODE: list(str)}

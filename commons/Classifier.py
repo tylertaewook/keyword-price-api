@@ -1,8 +1,21 @@
 import pandas as pd
 import re
 
-from commons.saved_var import lineup_map
 from alive_progress import alive_bar
+
+lineup_map = {
+    "구찌 다이애나": ["다이애나"],
+    "재키 1961": ["재키", "1961"],
+    "구찌 1955 홀스빗": ["홀스빗", "1955"],
+    "구찌 홀스빗 1955": ["홀스빗", "1955"],
+    "GG 마몽": ["마몽", "마몬트", "마몽"],
+    "디오니서스": ["디오니서스", "디오니소스", "디오니수스"],
+    "오피디아": ["오피디아"],
+    "실비": ["실비"],
+    "구찌 주미": ["주미"],
+    "패들락": ["패들락", "패드락", "페들락", "페드락"],
+    "더블G": ["더블G"],
+}
 
 
 class Classifier:
@@ -12,8 +25,8 @@ class Classifier:
 
     Attributes:
         home (str): directory of repository home
-        guccibag (df): ./gucci_bags.csv
-        guccibag_simp (df): ./gucci_bags_simp2.csv
+        genprods (df): ./gucci_bags.csv
+        genprods_simp (df): ./gucci_bags_simp2.csv
         sample (df): ./gucci_data_price.csv
         transliter (obj): object from hangul_romanizer
         soundex (obj): soundex object
@@ -35,16 +48,12 @@ class Classifier:
             {"400249 TLK88": ['디오니소스', '토킨백']}
             {"652439 POSLI": ['페드락', '토트백']}
 
-        :return: idx | list(ITEM_NO) 상품명에 name/lineup/code 중 하나 포함한 상품
-        i.e.
-            [12345678, 12345678, 12345678, 12345678]
         :return: dct | dict(MODELCODE) 상품명에 name/lineup/code 중 하나 포함한 상품
         i.e.
             {"400249 TLK88": [12345678, 12345678, 12345678, 12345678]}
             {"652439 POSLI": [12345678, 12345678, 12345678, 12345678]}
         """
         idx = []
-        idx2 = []
         idx3 = []
         dct = {}
         dm = self.digitmatch  # for easier reference
@@ -86,11 +95,10 @@ class Classifier:
         #         bar()
 
         print(f"Usable Data: {len(idx)} / {len(data)}")
-        print(f"Usable Data: {len(idx2)} / {len(data)}")
         print(f"Unusable Data: {len(idx3)} / {len(data)}")
         print("")
 
-        return idx, idx2, idx3, dct
+        return dct
 
     def classify_by_price(self, data, dct, codeprice):
         """
