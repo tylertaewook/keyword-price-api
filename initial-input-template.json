@@ -1,0 +1,55 @@
+{
+    "brand": "GC",
+    "genprods": [
+        {
+            "": 0,
+            "CODE": "655658 17QDT",
+            "TITLE(KOR)": "[구찌 다이애나] 미디엄 토트백",
+            "TITLE(ENG)": "gucci diana medium tote bag",
+            "LINEUP(KOR)": "구찌 다이애나",
+            "NAME(KOR)": "미디엄 토트백",
+            "PRICE": 5400000
+        },
+        {
+            "": 1,
+            "CODE": "660195 17QDT",
+            "TITLE(KOR)": "[구찌 다이애나] 스몰 토트백",
+            "TITLE(ENG)": "gucci diana small tote bag",
+            "LINEUP(KOR)": "구찌 다이애나",
+            "NAME(KOR)": "스몰 토트백",
+            "PRICE": 4500000
+        },
+        {
+            "": 2,
+            "CODE": "655661 17QDT",
+            "TITLE(KOR)": "[구찌 다이애나] 미니 토트백",
+            "TITLE(ENG)": "gucci diana mini tote bag",
+            "LINEUP(KOR)": "구찌 다이애나",
+            "NAME(KOR)": "미니 토트백",
+            "PRICE": 3700000
+        }
+    ],
+    "dataprice": [
+        {
+            "": 0,
+            "PID": 83150012310,
+            "TITLE": "홀스빗 1955 미니 토트 탑핸들백 명품 이너백 백인백 구찌 GG ‎645453 맞춤",
+            "PRICE": 23800
+        },
+        {
+            "": 1,
+            "PID": 27851896481,
+            "TITLE": "구찌_GG홀스빗 1955 미니 수프림 탑핸들백 645453 21SS",
+            "PRICE": 635000
+        },
+        {
+            "": 2,
+            "PID": 28055284730,
+            "TITLE": "[구찌] 구찌　GG홀스빗 1955 미니 수프림 탑핸들백 645453 21SS",
+            "PRICE": 635000
+        }
+    ],
+    "category": [
+        "TOBEFILLED"
+    ]
+}

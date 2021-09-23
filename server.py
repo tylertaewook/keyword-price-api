@@ -25,7 +25,7 @@ def read_jsons():
     final = generate_final(genprods, dataprice)  # TODO: part that takes a long time
 
     final.to_pickle("./test-json/final.pkl")
-    genprods.to_pickle("./test-json/genprod.pkl")
+    genprods.to_pickle("./test-json/gp.pkl")
 
     return "success"
 
@@ -34,7 +34,7 @@ def read_jsons():
 @app.route("/v1/resources/result/raw", methods=["GET"])
 def result_raw():
     final = pd.read_pickle("./test-json/final.pkl")
-    genprods = pd.read_pickle("./test-json/gcbag.pkl")
+    genprods = pd.read_pickle("./test-json/gp.pkl")
 
     result_raw = extract(genprods, final, raw=True)
     return json.dumps(result_raw, ensure_ascii=False, indent=4)
@@ -44,9 +44,7 @@ def result_raw():
 @app.route("/v1/resources/result/proc", methods=["GET"])
 def result_proc():
     final = pd.read_pickle("./test-json/final.pkl")
-    genprods = pd.read_pickle("./test-json/genprod.pkl")
-    print(type(final))
-    print(type(genprods))
+    genprods = pd.read_pickle("./test-json/gp.pkl")
 
     result_proc = extract(genprods, final)
     return json.dumps(result_proc, ensure_ascii=False, indent=4)
