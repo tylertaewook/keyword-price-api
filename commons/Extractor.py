@@ -180,12 +180,6 @@ class Extractor:
         i.e.
             [('백인',23), ('이너백',11), ('핸드백',8)]
         """
-        # FIXME: java heap memory error
-
-        # komoran = Komoran(DEFAULT_MODEL["LIGHT"])
-        # josas = komoran.get_morphes_by_tags(txt, tag_list=["JX", "JK", "JC"])
-        # for josa in josas:
-        #     txt = txt.replace(josa, "")
         splitted = txt.split()
 
         for i, v in enumerate(splitted):

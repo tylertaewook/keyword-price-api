@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-
 import pandas as pd
 import os
 import json
 from model import extract
 from flask import Flask, request
 
+from commons.Extractor import Extractor
+from commons.Visualizer import Visualizer
 
 app = Flask(__name__)
 
@@ -46,7 +47,8 @@ def get_keywords():
     # check for available feedback
 
     # extract keywords
-    result = extract(dp=dataprice)
+    extractor = Extractor()
+    result = extractor.extract_keyword(dp=dataprice)
 
     return json.dumps(result, ensure_ascii=False, indent=4)
 
@@ -67,7 +69,8 @@ def get_pricespread():
             -----------------------------------
         
     """
-    linktab = "notimplemented"
+    viz = Visualizer(col="cat4")
+    linktab = viz.generate_dict()
 
     return json.dumps(linktab, ensure_ascii=False, indent=4)
 
