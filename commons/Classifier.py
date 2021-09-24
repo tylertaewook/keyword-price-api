@@ -3,40 +3,17 @@ import re
 
 from alive_progress import alive_bar
 
-lineup_map = {
-    "구찌 다이애나": ["다이애나"],
-    "재키 1961": ["재키", "1961"],
-    "구찌 1955 홀스빗": ["홀스빗", "1955"],
-    "구찌 홀스빗 1955": ["홀스빗", "1955"],
-    "GG 마몽": ["마몽", "마몬트", "마몽"],
-    "디오니서스": ["디오니서스", "디오니소스", "디오니수스"],
-    "오피디아": ["오피디아"],
-    "실비": ["실비"],
-    "구찌 주미": ["주미"],
-    "패들락": ["패들락", "패드락", "페들락", "페드락"],
-    "더블G": ["더블G"],
-}
-
 
 class Classifier:
     """class responsible for cleaning, classifying, and prepping original data
 
-    refer to [price-text/classifier.py] for its uses
 
     Attributes:
         home (str): directory of repository home
-        genprods (df): ./gucci_bags.csv
-        genprods_simp (df): ./gucci_bags_simp2.csv
-        sample (df): ./gucci_data_price.csv
-        transliter (obj): object from hangul_romanizer
-        soundex (obj): soundex object
-        digitmatch (dict): {CODE: tuple(lineup_alt, split_titles)}
     """
 
     def __init__(self, genprods):
-        self.genprods = genprods
-        # {CODE: tuple(lineup_alt, split_titles)}
-        self.digitmatch = self.generate_titles()
+        raise NotImplementedError
 
     def classify_by_keywords(self, data):
         """
@@ -54,9 +31,8 @@ class Classifier:
             {"652439 POSLI": [12345678, 12345678, 12345678, 12345678]}
         """
         idx = []
-        idx3 = []
+        idx2 = []
         dct = {}
-        dm = self.digitmatch  # for easier reference
 
         with alive_bar(len(data)) as bar:
             for i, row in data.iterrows():
@@ -95,12 +71,12 @@ class Classifier:
         #         bar()
 
         print(f"Usable Data: {len(idx)} / {len(data)}")
-        print(f"Unusable Data: {len(idx3)} / {len(data)}")
+        print(f"Ignoring Data: {len(idx2)} / {len(data)}")
         print("")
 
         return dct
 
-    def classify_by_price(self, data, dct, codeprice):
+    def classify_by_price(self, data, cat="cat4"):
         """
         Classifies items in data into five groups and return the cleaned DataFrame object.
 
@@ -108,18 +84,21 @@ class Classifier:
         :dict dct: 
         :dict codeprice: 
 
-        :return: DataFrame final | columns=["pid", "title", "price", "code", "group"]
+        :return: DataFrame final | columns=["pid", "title", "price", "cat", "group"]
         i.e.
-            |  pid  | title | price |     code     | group |
-            | 12345 | "bla" | 12345 | 400249 TLK88 |   a   |
-            | 67890 | "bla" | 12345 | 654249 ASD99 |   b   |
-            | 12323 | "bla" | 12345 | 654249 ASD99 |   c   |
+            |  pid  | title | price |  cat   | group |
+            | 12345 | "bla" | 12345 | 자동우산 |   a   |
+            | 67890 | "bla" | 12345 | 손목장갑 |   b   |
+            | 12323 | "bla" | 12345 | 골프잡화 |   c   |
         """
 
         colnames = ["pid", "title", "price", "code", "group"]
         final = pd.DataFrame(columns=colnames)
-        # final.set_index("pid")
+
+        categs = data.cat.dropna().unique()
+
         with alive_bar(len(dct)) as bar:
+
             for model in dct.keys():
                 genprice = codeprice[model]
                 for pid in dct[model]:
@@ -151,34 +130,4 @@ class Classifier:
                     final = final.append(rowSeries)
                 bar("classifying by price...")
         return final
-
-    def generate_titles(self):
-        """
-        generates dict titles containing alternative lineup names and space-splitted product names
-
-        :return: dict titles | {CODE: tuple(lineup_alt, split_titles)}
-        - lineup_alt: acceptable alternatives to lineup(마몽, 마몬트, etc)
-        - split_titles: NAME(KOR).split()
-        i.e.
-            {621220 92TCG: (['홀스빗', '1955'], ['스몰', '탑', '핸들백'])}
-        """
-        titles = {}
-        simp = self.genprods
-        # TITLE (ENG), LINEUP (KOR), NAME(KOR)
-        for i, x in simp.iterrows():
-            titles[x.CODE] = (lineup_map[x["LINEUP(KOR)"]], x["NAME(KOR)"].split())
-        return titles
-
-    def search_code(self, text, full=True):
-        """
-        searches for code in given text
-        full=True: 655658 17QDT
-        full=False: 655658
-        """
-        if full:
-            temp = re.search("\d{6} [\dA-Z]{5}", text)
-        else:
-            temp = re.search("\d{% s}" % 6, text)
-        res = temp.group(0) if temp else ""
-        return str(res)
 

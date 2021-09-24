@@ -3,7 +3,7 @@
 import pandas as pd
 import os
 import json
-from model import generate_final, extract
+from model import extract
 from flask import Flask, request
 
 
@@ -16,40 +16,64 @@ def check_status():
 
 
 # receive genprods, dataprice JSON
-@app.route("/v1/resources/data", methods=["POST", "GET"])
-def read_jsons():
+@app.route("/api/v1/feedback", methods=["POST"])
+def read_feedback():
+    """
+    read user's feedback, duh
+
+    - save json files for later access
+    """
     request_data = request.get_json()
-    genprods = pd.json_normalize(request_data["genprods"])  # df obj
-    dataprice = pd.json_normalize(request_data["dataprice"])  # df obj
 
-    final = generate_final(genprods, dataprice)  # TODO: part that takes a long time
-
-    final.to_pickle("./test-json/final.pkl")
-    genprods.to_pickle("./test-json/gp.pkl")
+    with open("./cache/feedback.json", "w", encoding="UTF-8-sig") as file:
+        file.write(json.dumps(request_data, ensure_ascii=False))
 
     return "success"
 
 
 # return raw.json
-@app.route("/v1/resources/result/raw", methods=["GET"])
-def result_raw():
-    final = pd.read_pickle("./test-json/final.pkl")
-    genprods = pd.read_pickle("./test-json/gp.pkl")
+@app.route("/api/v1/results/keyword", methods=["GET"])
+def get_keywords():
+    """
+    return keywords/frequency/list of product as json
 
-    result_raw = extract(genprods, final, raw=True)
-    return json.dumps(result_raw, ensure_ascii=False, indent=4)
+    - clean data to product final.pkl
+    - look for available feedback and perform keyword extraction
+    """
+    # access db (csv for now)
+    dataprice = pd.read_csv("./dataprice.csv")
+
+    # check for available feedback
+
+    # extract keywords
+    result = extract(dp=dataprice)
+
+    return json.dumps(result, ensure_ascii=False, indent=4)
 
 
 # return proc.json
-@app.route("/v1/resources/result/proc", methods=["GET"])
-def result_proc():
-    final = pd.read_pickle("./test-json/final.pkl")
-    genprods = pd.read_pickle("./test-json/gp.pkl")
+@app.route("/api/v1/results/price-spread", methods=["GET"])
+def get_pricespread():
+    """
+    return price spread information
 
-    result_proc = extract(genprods, final)
-    return json.dumps(result_proc, ensure_ascii=False, indent=4)
+    :return: linktab - json of {category : img-link}
+            -----------------------------------
+            {
+                "골프장갑": 'https://fkz-web-images.cdn.ntruss.com/price-spread/xxx.png',
+                "마스크": 'https://fkz-web-images.cdn.ntruss.com/price-spread/xxx.png',
+                "생활용품": 'https://fkz-web-images.cdn.ntruss.com/price-spread/xxx.png',
+            }
+            -----------------------------------
+        
+    """
+    linktab = "notimplemented"
+
+    return json.dumps(linktab, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
+    app.run()
+
     # access with http://175.106.99.99:16758/
-    app.run(host="192.168.1.100", debug=True, port=16758)
+    # app.run(host="192.168.1.100", debug=True, port=16758)
