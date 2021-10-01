@@ -3,8 +3,6 @@ import numpy as np
 import seaborn
 import boto3
 import matplotlib.pyplot as plt
-import re
-from matplotlib.patches import PathPatch
 
 
 class Visualizer:
@@ -22,8 +20,8 @@ class Visualizer:
         self.dataprice = pd.read_csv("./dataprice.csv")
         self.col = col
         self.categs = self.dataprice[col].dropna().unique()
-        self.categs = self.categs[self.categs != "골프의류"]
         # FIXME: preventing exception caused by link in price column
+        self.categs = self.categs[self.categs != "골프의류"]
 
         self.storage_info = {
             "service_name": "s3",
@@ -35,6 +33,9 @@ class Visualizer:
         }
 
     def generate_graph(self, categ):
+        """
+        generates vertical boxplot of price range(s)
+        """
         df = self.dataprice[self.dataprice[self.col] == categ]
 
         plt.figure(figsize=(10, 15))

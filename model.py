@@ -20,7 +20,7 @@ def extract(dp):
     generate extractor and extract_keyword()
     """
     extractor = Extractor()
-    result = extractor.extract_keyword(dp)
+    result = extractor.extract_keyword_init(dp)
     return result
 
 

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-import os
 import json
-from model import extract
 from flask import Flask, request
 
 from commons.Extractor import Extractor
@@ -26,10 +24,13 @@ def read_feedback():
     """
     request_data = request.get_json()
 
+    df = pd.json_normalize(request_data)
+    df.to_pickle("./cache/feedback.pkl")
+
     with open("./cache/feedback.json", "w", encoding="UTF-8-sig") as file:
         file.write(json.dumps(request_data, ensure_ascii=False))
 
-    return "success"
+    return "received feedback"
 
 
 # return raw.json
@@ -47,9 +48,15 @@ def get_keywords():
     # check for available feedback
 
     # extract keywords
-    extractor = Extractor()
-    result = extractor.extract_keyword(dp=dataprice)
+    extractor = Extractor(dataprice)
+    keywords = extractor.extract_keyword()
+    with open("./cache/feedback.json", encoding="utf-8-sig") as json_file:
+        prev_feedback = json.load(json_file)
 
+    result = {
+        "result": keywords,
+        "previous-feedback": prev_feedback,
+    }
     return json.dumps(result, ensure_ascii=False, indent=4)
 
 
@@ -71,6 +78,8 @@ def get_pricespread():
     """
     viz = Visualizer(col="cat4")
     linktab = viz.generate_dict()
+
+    result = {}
 
     return json.dumps(linktab, ensure_ascii=False, indent=4)
 
