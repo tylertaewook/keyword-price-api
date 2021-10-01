@@ -85,7 +85,7 @@ def get_pricespread():
 
 
 if __name__ == "__main__":
-    app.run()
+    # app.run()
 
     # access with http://175.106.99.99:16758/
-    # app.run(host="192.168.1.100", debug=True, port=16758)
+    app.run(host="192.168.1.100", debug=True, port=16758)
