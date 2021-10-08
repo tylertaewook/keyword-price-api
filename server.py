@@ -11,17 +11,15 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def check_status():
+    # TODO: replace with telegram bot function
     return "STATUS: ONLINE"
 
 
 # receive genprods, dataprice JSON
 @app.route("/api/v1/feedback", methods=["POST"])
 def read_feedback():
-    """
-    read user's feedback, duh
+    """read user's feedback and save as json files for later access"""
 
-    - save json files for later access
-    """
     request_data = request.get_json()
 
     df = pd.json_normalize(request_data)
@@ -85,7 +83,7 @@ def get_pricespread():
 
 
 if __name__ == "__main__":
-    # app.run()
+    app.run()
 
     # access with http://175.106.99.99:16758/
-    app.run(host="192.168.1.100", debug=True, port=16758)
+    # app.run(host="192.168.1.100", debug=True, port=16758)

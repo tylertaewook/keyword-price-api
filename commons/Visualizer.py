@@ -38,12 +38,12 @@ class Visualizer:
         """
         df = self.dataprice[self.dataprice[self.col] == categ]
 
-        plt.figure(figsize=(10, 15))
+        plt.figure(figsize=(15, 10))
         seaborn.set(
             font="AppleGothic", rc={"axes.unicode_minus": False}, style="darkgrid"
         )
 
-        bp = seaborn.boxplot(y=df["price"].astype(int))
+        bp = seaborn.histplot(x=df["price"].astype(int))
         bp.set_xlabel(categ, fontsize=20)
 
         plt.savefig(f"./imgs/{categ}.png")
@@ -90,3 +90,11 @@ class Visualizer:
             imgDict[categ] = self.upload_file(categ)
 
         return imgDict
+
+
+if __name__ == "__main__":
+
+    viz = Visualizer(col="cat4")
+
+    viz.generate_graph("벨트")
+

@@ -9,7 +9,8 @@ from alive_progress import alive_bar
 
 
 class Extractor:
-    """class responsible for extracting keywords for the main model
+    """
+    class responsible for extracting keywords for the main model
 
     refer to [keyword-price-api/server.py] for its uses
 
@@ -92,6 +93,9 @@ class Extractor:
             return self.extract_keyword_feedback()
 
     def extract_keyword_init(self, col="current_cat"):
+        """
+        extract keyword in the first run when no feedback is given yet
+        """
         print("Running extract_keyword_init()...")
         categs = self.data[col].unique()
 
@@ -99,16 +103,15 @@ class Extractor:
         countobjs = []
         dfobjs = []
 
-        with alive_bar(69) as bar:  # 3028
-            for categ in categs:
-                df = self.data[self.data[col] == categ]
-                dfobjs.append(df)
-                countobj = Counter()
+        for categ in categs:
+            df = self.data[self.data[col] == categ]
+            dfobjs.append(df)
+            countobj = Counter()
 
-                for i, x in df.iterrows():
-                    countobj += self.extract_split(self.preproc_txt(x["title"]))
-                    bar.text("Extracting Keywords...")
-                countobjs.append(countobj)
+            for i, x in df.iterrows():
+                countobj += self.extract_split(self.preproc_txt(x["title"]))
+
+            countobjs.append(countobj)
 
         dicts = []
 
@@ -136,6 +139,9 @@ class Extractor:
         return self.generate_json(keywords, dicts, categs)
 
     def extract_keyword_feedback(self, col="current_cat"):
+        """
+        extract keyword based on previous feedback
+        """
         print("Running extract_keyword_feedback()...")
         fb = self.feedback
         categs = self.data[col].unique().tolist()
@@ -146,47 +152,40 @@ class Extractor:
         sus_countobjs = []
         dfobjs = []
 
-        with alive_bar(69) as bar:  # 3028
-            for categ in categs:
-                df = self.data[self.data[col] == categ]
-                dfobjs.append(df)
-                gen_countobj = Counter()
-                sus_countobj = Counter()
+        for categ in categs:
+            df = self.data[self.data[col] == categ]
+            dfobjs.append(df)
+            gen_countobj = Counter()
+            sus_countobj = Counter()
 
-                if (
-                    categ in feedback_categs
-                ):  # if categ is subject to applying feedbacks
+            if categ in feedback_categs:  # if categ is subject to applying feedbacks
 
-                    # TEST CASE for when the given lprice/hprice is NaN
-                    lprice_obj = fb[fb["categ"] == categ]["lprice"]
-                    hprice_obj = fb[fb["categ"] == categ]["hprice"]
-                    lprice_isnull = lprice_obj.isnull().values[0]
-                    hprice_isnull = hprice_obj.isnull().values[0]
+                # TEST CASE for when the given lprice/hprice is NaN
+                lprice_obj = fb[fb["categ"] == categ]["lprice"]
+                hprice_obj = fb[fb["categ"] == categ]["hprice"]
+                lprice_isnull = lprice_obj.isnull().values[0]
+                hprice_isnull = hprice_obj.isnull().values[0]
 
-                    lprice = 0 if lprice_isnull else int(lprice_obj)
-                    hprice = 9999999 if hprice_isnull else int(hprice_obj)
+                lprice = 0 if lprice_isnull else int(lprice_obj)
+                hprice = 9999999 if hprice_isnull else int(hprice_obj)
 
-                    for i, x in df.iterrows():
-                        price = int(x["price"])
-                        if (lprice <= price) & (price <= hprice):  # gen-range
-                            gen_countobj += self.extract_split(
-                                self.preproc_txt(x["title"])
-                            )
-                        else:  # sus-range
-                            sus_countobj += self.extract_split(
-                                self.preproc_txt(x["title"])
-                            )
-                else:
-                    for i, x in df.iterrows():
-                        gen_countobj += Counter()  # placeholder to match idx
+                for i, x in df.iterrows():
+                    price = int(x["price"])
+                    if (lprice <= price) & (price <= hprice):  # gen-range
+                        gen_countobj += self.extract_split(self.preproc_txt(x["title"]))
+                    else:  # sus-range
                         sus_countobj += self.extract_split(self.preproc_txt(x["title"]))
+            else:
+                for i, x in df.iterrows():
+                    gen_countobj += Counter()  # placeholder to match idx
+                    sus_countobj += self.extract_split(self.preproc_txt(x["title"]))
 
-                # feedback_keyword()
+            # feedback_keyword()
 
-                gen_countobjs.append(gen_countobj)
-                sus_countobjs.append(sus_countobj)
-                # bar.text("Extracting Keywords...")
-                bar()
+            gen_countobjs.append(gen_countobj)
+            sus_countobjs.append(sus_countobj)
+            # bar.text("Extracting Keywords...")
+
         dicts = []
 
         with alive_bar(2955) as bar:  # 648560
