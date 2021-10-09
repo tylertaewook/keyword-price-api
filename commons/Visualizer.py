@@ -37,16 +37,18 @@ class Visualizer:
         generates vertical boxplot of price range(s)
         """
         df = self.dataprice[self.dataprice[self.col] == categ]
-
+        
+        plt.rcParams["font.family"]= 'NanumGothic'
         plt.figure(figsize=(15, 10))
         seaborn.set(
-            font="AppleGothic", rc={"axes.unicode_minus": False}, style="darkgrid"
+            font="NanumGothic", rc={"axes.unicode_minus": False}, style="darkgrid"
         )
 
         bp = seaborn.histplot(x=df["price"].astype(int))
         bp.set_xlabel(categ, fontsize=20)
 
         plt.savefig(f"./imgs/{categ}.png")
+        plt.close()
 
     def upload_file(self, categ):
         """
