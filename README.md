@@ -1,16 +1,17 @@
 # keyword-price-api
+
 - [keyword-price-api](#keyword-price-api)
 - [**Typical Workflow**](#typical-workflow)
 - [**API calls**](#api-calls)
   - [[`GET`] get-keywords](#get-get-keywords)
     - [**Responses**](#responses)
-    - [**Sample Call**](#sample-call)
+    - [**Sample Call:**](#sample-call)
     - [**Code Workflow**](#code-workflow)
-  - [## [`GET`] get-pricespread](#-get-get-pricespread)
+  - [[`GET`] get-pricespread](#get-get-pricespread)
     - [**Responses**](#responses-1)
     - [**Sample Call:**](#sample-call-1)
     - [**Code Workflow**](#code-workflow-1)
-  - [## [`POST`] read-feedback](#-post-read-feedback)
+  - [[`POST`] read-feedback](#post-read-feedback)
     - [**Input Data Params**](#input-data-params)
     - [**Responses**](#responses-2)
     - [**Sample Call:**](#sample-call-2)
@@ -161,7 +162,7 @@ URL: `/api/v1/results/keyword`
     ```
 
 
-### **Sample Call**
+### **Sample Call:**
 
 ```
 curl --location --request GET 'http://175.106.99.99:16758/api/v1/results/price-spread'
