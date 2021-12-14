@@ -1,5 +1,8 @@
 # keyword-price-api
 
+a keyword analysis tool/API in flask: extracts keywords from e-commerce items in different categories and provides keywords/price distribution information with user’s feedback input;
+
+
 - [keyword-price-api](#keyword-price-api)
 - [**Typical Workflow**](#typical-workflow)
 - [**API calls**](#api-calls)
@@ -22,37 +25,37 @@
 
 
 
-| method | url                                                  | input format | output format | desc                                                                               |
-| :----: | ---------------------------------------------------- | ------------ | :-----------: | ---------------------------------------------------------------------------------- |
-|  GET   | [/api/v1/results/keyword](#get-get-keywords)         | n/a          |     JSON      | 각 카테고리별 키워드들의 출현빈도와 출현된 productId 리스트를 리턴                 |
-|  GET   | [/api/v1/results/price-spread](#get-get-pricespread) | n/a          |     JSON      | 각 카테고리 아이템들의 가격분포를 histogram으로 나타낸 이미지 링크들을 dict로 리턴 |
-|  POST  | [/api/v1/feedback](#post-read-feedback)              | JSON         |      str      | 유저의 피드백을 읽어들여 다음 get메소드들이 호출될때 반영되게 함                   |
+| method | url                                                  | input format | output format | desc                                                                                                |
+| :----: | ---------------------------------------------------- | ------------ | :-----------: | --------------------------------------------------------------------------------------------------- |
+|  GET   | [/api/v1/results/keyword](#get-get-keywords)         | n/a          |     JSON      | returns keywords' frequencies and relevant productIds for each category                             |
+|  GET   | [/api/v1/results/price-spread](#get-get-pricespread) | n/a          |     JSON      | returns a dictionary of img link of histogram depicting item's price distribution for each category |
+|  POST  | [/api/v1/feedback](#post-read-feedback)              | JSON         |      str      | reads and applies user's feedback for future GET requests requests                                  |
 
 
 # **Typical Workflow**
 
-beforehand: MongoDB에 타겟 데이터베이스 업로드
+beforehand: upload target database to MongoDB
 
 **for** *i = 1* **to** *repeat* **do**:
 
 {
    1. [GET-KEYWORDS](#get-get-keywords)
 
-      a. i=1: 최초 상태에서 각 카테고리별 키워드 정보 반환
+      a. i=1: return keyword information for each category in its initial state
 
-      b. i>=2: 피드백이 반영된 키워드 정보와 #3을 위한 가장최근 피드백 반환
+      b. i>=2: returns feedback-applied keyword information and most recent feedback file for #3(POST-FEEDBACK)
    2. [GET-PRICESPREAD](#get-get-pricespread):  (optional)
 
-      a. i=1: 각 카테고리 아이템들의 가격분포를 histogram으로 나타낸 이미지 링크들을 dict로 리턴
+      a. i=1: returns a dictionary of item name and img link of histogram depicting item's price distribution for each category
       
-      b. i>=2: 피드백 입력 후: 피드백이 반영된 histogram링크 반환
+      b. i>=2: after inputting feedback: returns histogram img links with feedback applied
    3. [POST-FEEDBACK](#post-read-feedback)
    
-      a. i=1: #2, #3의 정보를 기반으로 tweak하고 싶은 부분을 피드백으로 입력
+      a. i=1: posts feedback information based on information from GET-KEYWORDS and GET-PRICESPREAD
 
-      b. i>=2: #1의 가장 최근 피드백을 ***기반***으로 새로운 옵션을 ***추가***하여 입력
+      b. i>=2: posts a new feedback by **APPENDING** new options from the most recent feedback received from GET-KEYWORDS
       
-      *Note*: [**Important Note**](#important-note) 참조
+      *Note*: Refer to [**Important Note**](#important-note) 
 
 
 
@@ -67,7 +70,7 @@ beforehand: MongoDB에 타겟 데이터베이스 업로드
 
 URL: `/api/v1/results/keyword`
 
-  각 카테고리별 키워드들의 출현빈도와 출현된 productId 리스트를 리턴
+  returns keywords' frequencies and productIds that included the keywords for each category
 
 ### **Responses**
 
@@ -82,31 +85,31 @@ URL: `/api/v1/results/keyword`
         | attributes | type                    | desc      | uses |
         | ---------- | ----------------------- | --------- | ---- |
         | categ      | str                     |           |      |
-        | keywords   | list of keyword-objects | 아래 참조 |      |  |
+        | keywords   | list of keyword-objects | see below |      |  |
 
       
 
     - **keyword-objects**
-      | attributes   | type         | desc                                   | uses                                                |
-      | ------------ | ------------ | -------------------------------------- | --------------------------------------------------- |
-      | rank         | int          | 출현 빈도별 순위                       |                                                     |
-      | keyword      | str          | 키워드 이름                            |                                                     |
-      | appearance   | int          | 출현빈도                               | *note: 출현빈도와 product_list의 값이 다를 수 있음* |
-      | product_list | list of ints | 키워드가 등장하는 아이템들의 productId |                                                     |
+      | attributes   | type         | desc                                     | uses                                                |
+      | ------------ | ------------ | ---------------------------------------- | --------------------------------------------------- |
+      | rank         | int          | rank based on appearance frequencies     |                                                     |
+      | keyword      | str          | keyword name                             |                                                     |
+      | appearance   | int          | appearance frequencies                   | *note: app.freq and product_list's value can differ |
+      | product_list | list of ints | productId which had keyword in the title |                                                     |
       
-- **previous-feedback**: 이전에 POST됬던 피드백 json; 자료구조는 [read-feedback](#post-read-feedback) 참조
+- **previous-feedback**: feedback json which was posted most recently ; see [read-feedback](#post-read-feedback) for relevant data structure
 
-*예시*
+*e.g.*
 
     ```
     {
         "result": [
             {
-                "categ": "휴대용선풍기",
+                "categ": "portable_fan",
                 "keywords": [
                     {
                         "rank": 1,
-                        "keyword": "선풍기",
+                        "keyword": "fan",
                         "appearance": 5,
                         "product_list": [
                             "82497194884"
@@ -114,7 +117,7 @@ URL: `/api/v1/results/keyword`
                     },
                     {
                         "rank": 2,
-                        "keyword": "클립",
+                        "keyword": "paperclip",
                         "appearance": 1,
                         "product_list": [ 
                             "82497194884"
@@ -122,11 +125,11 @@ URL: `/api/v1/results/keyword`
                     },
             },
             {
-                "categ": "먼지차단마스크",
+                "categ": "dustproof_mask",
                 "keywords": [
                     {
                         "rank": 1,
-                        "keyword": "마스크",
+                        "keyword": "mask",
                         "appearance": 32,
                         "product_list": [
                             "27224642701",
@@ -138,22 +141,22 @@ URL: `/api/v1/results/keyword`
             }
         "previous-feedback": [
             {
-                "categ": "골프백세트",
+                "categ": "golfbag_set",
                 "lprice": 60000,
                 "hprice": 150000,
                 "sub-cats": [
-                    "골프파우치",
-                    "보스턴백"
+                    "golfpouch",
+                    "bostonbag"
                 ],
                 "ignore": [
-                    "골프b",
-                    "b카카오프렌즈",
-                    "럭키",
-                    "베이직"
+                    "golfb",
+                    "bKakaofriends",
+                    "special",
+                    "basic"
                 ],
                 "effective": [
-                    "공식몰",
-                    "정품급",
+                    "official_website",
+                    "high-quality",
                     "PLACEHOLDER"
                 ]
             }
@@ -170,52 +173,53 @@ curl --location --request GET 'http://175.106.99.99:16758/api/v1/results/price-s
 ### **Code Workflow**
 
 1. Dataset Prep & Cleaning
-   1. target DB를 mongoDB로부터 읽어와 아래와 같은 DataFrame obj를 생성함
+   1. Generate the following dataframe obj from target DB in mongoDB
 ![dataprice](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/8314sdgsd0sk2omn6an0.png)
-   2. `current_cat`는 현재 아이템의 최하위 카테고리를 가르키는 포인터 역할을 함
-   3. `title` 열은 각종 특수문자를 제거하여 다시 저장됨
+   1. `current_cat` acts as a pointer showing current item's lowest category level (most specific category level)
+      1. i.e) *iPhone* is the lowest category from [*Electronics -> Smartphones -> iPhones*]
+   2. `title`  column is saved after basic string-cleaning
     ```
     i.e. 
-    (칼렛바이오)(NEXT-M)<b>카카오프렌즈 골프</b> 마스크 세탁 30회 다회용마스크 (6395452)
+    (AMAZON)(NEXT-M)<b>Kakaofriends golf</b> mask 세탁 30회 다회용mask (6395452)
                                     ⬇️
-    칼렛바이오 NEXT-M 카카오프렌즈 골프 마스크 세탁 30회 다회용마스크
+    AMAZON NEXT-M Kakaofriends golf mask 세탁 30회 다회용mask
     ```
-   4. 피드백의 `sub-cats`가 제공되었을 경우 하위 카테고리를 그 카테고리에 합침
+   3. when `sub-cats` is given in feedback: merges lower category to current category
     ```
     i.e. 
-    "categ": "골프백세트",
+    "categ": "golfbag_set",
     "sub-cats": [
-        "골프파우치",
-        "보스턴백"
+        "golfpouch",
+        "bostonbag"
     ],
     ```
-    이 경우,
+    In this case,
     ```
-    골프백세트 + 보스턴백 + 골프파우치 => 골프백세트로 합쳐짐
-    `current_cat`열의 값이 모두 골프백세트로 변경됨
+    golfbag_set + bostonbag + golfpouch => merged into golfbag_set
+    `current_cat` column value is changed to golfbag_set
     ```
 
-1. Keyword Extraction 1 [피드백이 제공지 않은 경우]
-   1. 각 카테고리의 아이템들에서 출현한 모든 키워드들을 `dict{Category: Counter(keywords)}`로 저장
+1. Keyword Extraction 1 [when no feedback is given]
+   1. save all keywords that appeared in each category's item to `dict{Category: Counter(keywords)}`
    
-      a. i.e. {`Category1` : `[('백인',23), ('이너백',12), ('핸드백',5)]`}
+      a. i.e. {`Category1` : `[('handbags',23), ('luxurious',12), ('pouches',5)]`}
    
 
-2. Keyword Extraction 2 [피드백이 제공된 경우]
-   1. 각 카테고리의 아이템들에서 출현한 모든 키워드들을 iterate함
+2. Keyword Extraction 2 [when feedback is given]
+   1. Iterate through all keywords that appeared in each category's item
    
-      a. 가격이 [`lprice`, `hprice`] 안에 해당되는 경우 `gen_countobj`에 키워드 저장
+      a. if price is inside the range [`lprice`, `hprice`] -> save keyword to `gen_countobj`
 
-      b. 가격이 이 밖에 해당되는 경우 `sus_countobj`에 키워드 저장
+      b. if price is outside the range => save keyword to `sus_countobj`
 
-   2. 저장된 `Counter` 오브젝트에서 피드백이 제공된 경우 이를 반영함
+   2. Update `Counter` object
    
-      a. `sus_countobj`에서 `gen_countobj`의 키워드들을 제거함
+      a. Remove `gen_countobj` keywords from `sus_countobj`
 
-      b. 남은 키워드들은 다시 한번 iterate하며 피드백의 `ignore`, `effective`항목들을 반영한다.
+      b. Iterate the remaining keywords again to update `ignore`, `effective`.
 
 3. JSON Generation
-- #2에서 생성된 `dict`에 기반하여 dump가능한 final JSON파일을 생성함:
+- generate a dumpable final JSON file based on `dict` from step 2
     ```
     Category A
         {
@@ -230,7 +234,7 @@ curl --location --request GET 'http://175.106.99.99:16758/api/v1/results/price-s
 ----
 URL: `/api/v1/results/price-spread`
 
-  각 카테고리 아이템들의 가격분포를 histogram으로 나타낸 이미지 링크들을 dict로 리턴
+  returns a dictionary of img link of histogram depicting item's price distribution for each category
 
 ### **Responses**
 
@@ -239,21 +243,21 @@ URL: `/api/v1/results/price-spread`
 **Code:** 200 <br />
 **Content:**
 
-| KEY            | VALUE             |
-| -------------- | ----------------- |
-| 카테고리 (str) | 이미지 링크 (str) |
+| KEY            | VALUE          |
+| -------------- | -------------- |
+| category (str) | img_link (str) |
 
 예시
 
 ```
 {
-    "휴대용선풍기": "https://fkz-web-images.cdn.ntruss.com/price-spread/휴대용선풍기.png",
-    "마스크": "https://fkz-web-images.cdn.ntruss.com/price-spread/마스크.png",
-    "노트": "https://fkz-web-images.cdn.ntruss.com/price-spread/노트.png",
-    "샤워가운": "https://fkz-web-images.cdn.ntruss.com/price-spread/샤워가운.png",
-    "여행용세트": "https://fkz-web-images.cdn.ntruss.com/price-spread/여행용세트.png",
-    "수동우산": "https://fkz-web-images.cdn.ntruss.com/price-spread/수동우산.png",
-    "자동우산": "https://fkz-web-images.cdn.ntruss.com/price-spread/자동우산.png"
+    "portable_fan": "https://fkz-web-images.cdn.ntruss.com/price-spread/portable_fan.png",
+    "mask": "https://fkz-web-images.cdn.ntruss.com/price-spread/mask.png",
+    "laptop": "https://fkz-web-images.cdn.ntruss.com/price-spread/laptop.png",
+    "showergown": "https://fkz-web-images.cdn.ntruss.com/price-spread/showergown.png",
+    "waterbottle": "https://fkz-web-images.cdn.ntruss.com/price-spread/waterbottle.png",
+    "large_umbrella": "https://fkz-web-images.cdn.ntruss.com/price-spread/large_umbrella.png",
+    "macbook": "https://fkz-web-images.cdn.ntruss.com/price-spread/macbook.png"
 }
 ```
 
@@ -268,10 +272,10 @@ curl --location --request GET 'http://175.106.99.99:16758/api/v1/results/price-s
 ### **Code Workflow**
 
 *for categ in all_categories_as_list:*
-- DB에서 최하위카테고리==categ인 항목들을 모아 새로운 DataFrame을 생성함
-- 새로 생성된 DataFrame에서 price column정보에 기반하여 seaborn.histplot(히스토그램) 생성
-- boto3을 이용해 생성된 히스토그램을 objective storage에 업로드
-- 업로드된 이미지 링크를 **dict**{categ: img_link} 형태로 저장
+- generate a fresh DataFrame of rows in which `lowest_category==categ` in DB
+- generate a seaborn.histplot(histogram) from DataFrame's price column
+- Upload generated histograms to objective storage using boto3
+- save the links as **dict**{categ: img_link}
   
 *end for*
 
@@ -281,7 +285,7 @@ curl --location --request GET 'http://175.106.99.99:16758/api/v1/results/price-s
 ----
 URL: `/api/v1/feedback`
 
-  유저의 피드백을 읽어들여 다음 get메소드들이 호출될때 반영되게 함
+  reads and applies user's feedback for future GET requests
 
 
 
@@ -290,41 +294,41 @@ URL: `/api/v1/feedback`
 - array of:
     - keyword-feedback object
     - 
-        | attributes | type          | desc                                        | uses                                                                     |
-        | ---------- | ------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
-        | categ      | str           | 키워드 이름                                 |                                                                          |
-        | lprice     | int           | 정품 가격 범위의 최소 가격                  | 정품 가격범위에 속한 아이템 키워드들은 최종 반환되는 키워드들에서 제거됨 |
-        | hprice     | int           | 정품 가격 범위의 최대 가격                  | "                                                                        |
-        | sub-cats   | listOfStrings | 현재 카테고리에 합쳐질 하위 카테고리 이름들 | 하위 카테고리에 속한 아이템들은 모두 현재 키워드 아래로 소속됨           |
-        | ignore     | listOfStrings | 무시할 키워드들                             | 최종 반환결과에서 제외됨                                                 |
-        | effective  | listOfStrings | 간직할 키워드들                             | 출현빈도가 0이라도 최종 반환됨                                           |
+        | attributes | type          | desc                                                           | uses                                                                              |
+        | ---------- | ------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+        | categ      | str           | keyword name                                                   |                                                                                   |
+        | lprice     | int           | min value in genuine product's price range                     | item keywords with the price inside genuine's range is removed from final results |
+        | hprice     | int           | max value in genuine product's price range                     | "                                                                                 |
+        | sub-cats   | listOfStrings | lower category names that will be merged into current category | items in lower category will all belong under current keyword                     |
+        | ignore     | listOfStrings | keywords to ignore                                             | removed from final return                                                         |
+        | effective  | listOfStrings | keywords that seem promising/critical                          | displayed even if app.freq is 0                                                   |
 
-*예시*
+*i.e.*
 
 ```
 [
     {
-        "categ": "골프백세트",
+        "categ": "golfbag_set",
         "lprice": 60000,
         "hprice": 150000,
         "sub-cats": [
-            "골프파우치",
-            "보스턴백"
+            "golfpouch",
+            "bostonbag"
         ],
         "ignore": [
-            "골프b",
-            "b카카오프렌즈",
-            "럭키",
-            "베이직"
+            "golfb",
+            "bKakaofriends",
+            "special",
+            "basic"
         ],
         "effective": [
-            "공식몰",
-            "정품급",
+            "official-website",
+            "high-quality",
             "PLACEHOLDER"
         ]
     },
     {
-        "categ": "모자",
+        "categ": "hats",
         "lprice": 35000,
         "hprice": 55000,
         "sub-cats": [],    # they can be left as empty list
@@ -348,7 +352,7 @@ URL: `/api/v1/feedback`
 curl --location --request POST 'http://175.106.99.99:16758/api/v1/feedback' \
 --data-raw '[
     {
-        "categ": "모자",
+        "categ": "hats",
         "lprice": 35000,
         "hprice": 55000,
         "sub-cats": [],
@@ -360,68 +364,66 @@ curl --location --request POST 'http://175.106.99.99:16758/api/v1/feedback' \
 
 ### **Important Note**
 
-[**Typical Code Workflow**](#typical-code-workflow)에서 언급된 반복문에서 2번째
- iteration이상부터는 [[`GET`] get-keywords](#get-get-keywords)에서 리턴된
- `previous-feedback`값에 추가하고 싶은 피드백 옵션을 덧붙여야 합니다.
+For any iteration(i>=2) mentioned in[**Typical Code Workflow**](#typical-code-workflow), you must include `previous-feedback` from [[`GET`] get-keywords](#get-get-keywords) so all the previous options can be applied for the new iteration.
 
-따라서 새로운 피드백을 작성할때에는 `previous-feedback`을 복사한 내용을 수정하여 POST하는 것을 권고드립니다.
+Therefore when writing new feedback files, we suggest you copy `previous-feedback`'s content and edit accordingly.
 
 i.e.
 ```
 "previous-feedback": 
 [
     {
-        "categ": "골프백세트",
+        "categ": "golfbag_set",
         "lprice": 60000,
         "hprice": 150000,
         "sub-cats": [
-            "골프파우치",
-            "보스턴백"
+            "golfpouch",
+            "bostonbag"
         ],
         "ignore": [
-            "골프b",
-            "b카카오프렌즈",
-            "럭키",
-            "베이직"
+            "golfb",
+            "bKakaofriends",
+            "special",
+            "basic"
         ],
         "effective": [
-            "공식몰",
-            "정품급",
+            "official-website",
+            "high-quality",
         ]
     }
 ]
 ```
-새로 update된 feedback.json
+updated feedback.json
 ```
 [
     {
-        "categ": "골프백세트",
+        "categ": "golfbag_set",
         "lprice": 60000,
         "hprice": 150000,
         "sub-cats": [],             # editted
         "ignore": [
-            "골프b",
-            "b카카오프렌즈",
-            "럭키",
-            "베이직",
-            "할인가",                 # added
+            "golfb",
+            "bKakaofriends",
+            "special",
+            "basic",
+            "discount",                 # added
             "golf"                  # added
         ],
         "effective": [
-            "공식몰",
-            "정품급",
-            "해외직구",               # added
-            "S급"                   # added
+            "official-website",
+            "high-quality",
+            "made_in_china",               # added
+            "imitation"                   # added
         ]
     }
 ]
 ```
-- "sub-cats": 이미 전 iteration에서 하위 카테고리들이 합체되었으므로 옵션 제거
-- "ignore": '할인가'와 'golf' 추가
-- "effective": "해외직구"와 "S급" 추가
+- "sub-cats": remove options as lower categories were merged in the previous iteration
+- "ignore": added 'discount' and 'golf'
+- "effective": added "made_in_china" and "imitation"
 
 ### **Code Workflow**
 ```
-- POST된 json 파일을 읽어드림
-- 추후 다른 route에서 접근가능하도록 `./cache/feedback.json` & `./cache/feedback.pkl`파일로 저장
+- read the POSTed json file
+- save as `./cache/feedback.json` & `./cache/feedback.pkl` for future accesses
 ```
