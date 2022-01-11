@@ -1,4 +1,9 @@
 # keyword-price-api
+<a href="https://github.com/tylertaewook/keyword-price-api/blob/main/LICENSE"><img alt="License: MIT" src="https://black.readthedocs.io/en/stable/_static/license.svg"></a>
+<a href="https://github.com/tylertaewook/keyword-price-api"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/tylertaewook/keyword-price-api.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tylertaewook/keyword-price-api/alerts/)
+<!-- [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/tylertaewook/keyword-price-api.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tylertaewook/keyword-price-api/context:python) -->
 
 a keyword analysis tool/API in flask: extracts keywords from e-commerce items in different categories and provides keywords/price distribution information with user’s feedback input;
 
